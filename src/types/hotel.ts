@@ -25,6 +25,14 @@ export interface VideoData {
   };
 }
 
+export interface RoomImageResource {
+  id: string;
+  key: string;
+  count: number;
+  image_urls: string[];
+  display_name: string;
+}
+
 export interface RoomProperties {
   room_capacity?: {
     max_children: number;
@@ -33,7 +41,63 @@ export interface RoomProperties {
   video_url?: {
     med: string;
   };
-  room_images?: ImageSet[];
+  room_images?: RoomImageResource[];
+}
+
+export interface CancellationRule {
+  date_info?: string;
+  description?: string;
+  cost?: string | number | null;
+}
+
+export interface CancellationInfo {
+  free_cancellation: number;
+  free_cancellation_info?: string;
+  free_cancel_description?: string;
+  free_amendment_description?: string | null;
+  cancellation_rules?: CancellationRule[];
+}
+
+export interface VariantPromoEntry {
+  discount?: number | null;
+  offer_type?: string | null;
+  offer_title?: string | null;
+  offer_description?: string | null;
+  offer_condition?: string | null;
+  offer_note?: string | null;
+  offer_stay?: string | null;
+  offer_pay?: string | null;
+  offer_upgrade_to_room_id?: string | null;
+  offer_upgrade_to_meal_id?: string | null;
+  offer_discounted_nights?: string | null;
+  offer_total_price?: number | null;
+  offer_discounted_total_price?: number | null;
+}
+
+export interface VariantTotalPrice {
+  total_price?: number | null;
+  discounted_price?: number | null;
+  total_price_rounded?: number | null;
+  discounted_price_rounded?: number | null;
+  currency?: string;
+  promo_list?: VariantPromoEntry[];
+}
+
+export interface VariantDisplayProperty {
+  name: string;
+  display_name: string;
+  icon_name: string;
+  order: string;
+  value: string;
+}
+
+export interface RoomVariant {
+  variant_id: string;
+  variant_code?: string;
+  name: string;
+  display_properties?: VariantDisplayProperty[];
+  cancellation_info?: CancellationInfo;
+  total_price?: VariantTotalPrice;
 }
 
 export interface Room {
@@ -42,6 +106,7 @@ export interface Room {
   variants_count: number;
   images: ImageSet[] | null;
   properties: RoomProperties;
+  variants?: RoomVariant[];
 }
 
 export interface PriceInfo {

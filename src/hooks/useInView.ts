@@ -1,12 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+interface UseInViewOptions extends IntersectionObserverInit {
+  once?: boolean;
+}
 
 /**
  * Custom hook to detect when an element is visible in the viewport
  * Uses Intersection Observer API for efficient viewport detection
  */
-export function useInView(options?: IntersectionObserverInit) {
+export function useInView(options?: UseInViewOptions) {
   const ref = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [hasEnteredView, setHasEnteredView] = useState(false);
+
+  const { once, observerOptions } = useMemo(() => {
+    const { once: shouldRunOnce = true, ...rest } = options ?? {};
+    return {
+      once: shouldRunOnce,
+      observerOptions: {
+        threshold: 0.1,
+        rootMargin: '100px',
+        ...rest,
+      } as IntersectionObserverInit,
+    };
+  }, [options]);
 
   useEffect(() => {
     const element = ref.current;
@@ -14,17 +31,17 @@ export function useInView(options?: IntersectionObserverInit) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Once in view, we keep it true (for lazy loading purposes)
         if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.unobserve(element);
+            setIsInView(true);
+            setHasEnteredView(true);
+          if (once) {
+            observer.unobserve(element);
+          }
+        } else if (!once) {
+          setIsInView(false);
         }
       },
-      {
-        threshold: 0.1,
-        rootMargin: '100px', // Start loading slightly before element is in view
-        ...options,
-      }
+      observerOptions,
     );
 
     observer.observe(element);
@@ -32,7 +49,7 @@ export function useInView(options?: IntersectionObserverInit) {
     return () => {
       observer.disconnect();
     };
-  }, [options]);
+  }, [observerOptions, once]);
 
-  return { ref, isInView };
+  return { ref, isInView, hasEnteredView };
 }
