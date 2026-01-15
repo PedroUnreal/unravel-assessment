@@ -14,17 +14,6 @@ export interface ImageSet {
   threeX: ImageVariant;
 }
 
-export interface VideoData {
-  item_id: string;
-  video_id: string;
-  position: number;
-  image: ImageSet;
-  video_caption: string;
-  video_url: {
-    med: string;
-  };
-}
-
 export interface RoomImageResource {
   id: string;
   key: string;
@@ -44,60 +33,37 @@ export interface RoomProperties {
   room_images?: RoomImageResource[];
 }
 
-export interface CancellationRule {
-  date_info?: string;
-  description?: string;
-  cost?: string | number | null;
-}
-
 export interface CancellationInfo {
-  free_cancellation: number;
-  free_cancellation_info?: string;
-  free_cancel_description?: string;
-  free_amendment_description?: string | null;
-  cancellation_rules?: CancellationRule[];
+    free_cancellation_info?: string;
+    free_cancel_description?: string;
+    free_amendment_description?: string;
+    cancellation_rules?: Array<{
+        date_info?: string;
+        description?: string;
+        cost?: number | string;
+    }>;
 }
 
-export interface VariantPromoEntry {
-  discount?: number | null;
-  offer_type?: string | null;
-  offer_title?: string | null;
-  offer_description?: string | null;
-  offer_condition?: string | null;
-  offer_note?: string | null;
-  offer_stay?: string | null;
-  offer_pay?: string | null;
-  offer_upgrade_to_room_id?: string | null;
-  offer_upgrade_to_meal_id?: string | null;
-  offer_discounted_nights?: string | null;
-  offer_total_price?: number | null;
-  offer_discounted_total_price?: number | null;
-}
-
-export interface VariantTotalPrice {
-  total_price?: number | null;
-  discounted_price?: number | null;
-  total_price_rounded?: number | null;
-  discounted_price_rounded?: number | null;
-  currency?: string;
-  promo_list?: VariantPromoEntry[];
-}
-
-export interface VariantDisplayProperty {
-  name: string;
-  display_name: string;
-  icon_name: string;
-  order: string;
-  value: string;
+export interface VariantPricing {
+    currency?: string;
+    total_price?: number;
+    discounted_price?: number;
+    promo_list?: Array<{
+        offer_total_price?: number;
+        offer_discounted_total_price?: number;
+        offer_title?: string;
+    }>;
 }
 
 export interface RoomVariant {
-  variant_id: string;
-  variant_code?: string;
-  name: string;
-  display_properties?: VariantDisplayProperty[];
-  cancellation_info?: CancellationInfo;
-  total_price?: VariantTotalPrice;
+    total_price?: VariantPricing;
+    name?: string;
+    variant_id: string;
+    display_properties?: Array<{
+        display_name?: string;
+        value?: string;
+    }>;
+    cancellation_info?: CancellationInfo;
 }
 
 export interface Room {
@@ -109,12 +75,6 @@ export interface Room {
   variants?: RoomVariant[];
 }
 
-export interface PriceInfo {
-  is_discount_present: boolean;
-  total_price: number;
-  discounted_price: number;
-  unit: string;
-}
 
 export interface HotelDetails {
   item_id: string;
@@ -122,8 +82,6 @@ export interface HotelDetails {
   name: string;
   description: string;
   images: ImageSet[];
-  new_videos: VideoData[];
-  price_info: PriceInfo;
   properties: {
     price: Array<{
       unit: string;

@@ -1,49 +1,41 @@
-export interface VariantDetail {
-    label: string;
-    value: string;
-}
+import { Utensils, Bed, User, Users } from 'lucide-react';
+import { VariantPrice } from './VariantPrice';
+import { CancellationPolicy } from './CancellationPolicy';
+import type { RoomVariant } from '../types/hotel';
+
 
 export type VariantDetailKey = 'mealsIncluded' | 'bedType' | 'adultOccupancy' | 'familyOccupancy';
 
+const PROPERTY_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+    'Meals included': Utensils,
+    'Bed type': Bed,
+    'Adult occupancy': User,
+    'Family occupancy': Users,
+};
+
+
 export interface VariantCardProps {
-    name?: string;
+    variant: RoomVariant;
     isSelected: boolean;
     onSelect: () => void;
-    mealsIncluded?: VariantDetail;
-    bedType?: VariantDetail;
-    adultOccupancy?: VariantDetail;
-    familyOccupancy?: VariantDetail;
+    onSelectClick?: () => void;
+    roomTypeCode?: string;
 }
-
-const DETAIL_RENDER_ORDER: VariantDetailKey[] = [
-    'mealsIncluded',
-    'bedType',
-    'adultOccupancy',
-    'familyOccupancy',
-];
 
 /**
  * VariantCard renders a selectable block showing the structured attributes
  * for a room variant (meals included, bed/occupancy details, etc.).
  */
 export function VariantCard({
-    name,
+    variant,
     isSelected,
     onSelect,
-    mealsIncluded,
-    bedType,
-    adultOccupancy,
-    familyOccupancy,
+    onSelectClick,
 }: VariantCardProps) {
-    const detailMap: Record<VariantDetailKey, VariantDetail | undefined> = {
-        mealsIncluded,
-        bedType,
-        adultOccupancy,
-        familyOccupancy,
-    };
+    const name = variant.name || 'Variant';
+    const displayProperties = variant.display_properties ?? [];
 
-    const detailKeys = DETAIL_RENDER_ORDER.filter(key => detailMap[key]);
-    const variantClasses = `w-full text-left rounded-xl border p-4 space-y-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${isSelected ? 'border-teal-500 bg-teal-50 shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-teal-200'
+    const variantClasses = `w-full text-left rounded-xl border p-4 space-y-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 cursor-pointer ${isSelected ? 'border-teal-500 bg-teal-50 shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-teal-200'
         }`;
 
     return (
@@ -52,20 +44,42 @@ export function VariantCard({
                 {name || 'Variant'}
             </div>
 
-            {detailKeys.length > 0 ? (
+            {displayProperties.length > 0 ? (
                 <div className="space-y-3">
-                    {detailKeys.map(key => {
-                        const detail = detailMap[key]!;
-                        return (
-                            <div key={key} className="flex flex-col gap-0.5">
-                                <span className="text-xs text-gray-500">{detail.label}</span>
-                                <span className="text-sm text-gray-900">{detail.value}</span>
+                    {displayProperties.map((prop, index) => {
+                        const Icon = prop.display_name ? PROPERTY_ICONS[prop.display_name] : null;
+                        return prop.display_name ? (
+                            <div key={index} className="flex items-center gap-2">
+                                {Icon && <Icon size={16} className="text-gray-500 flex-shrink-0" />}
+                                <span className="text-sm text-gray-900">{prop.value || '—'}</span>
                             </div>
-                        );
+                        ) : null;
                     })}
                 </div>
             ) : (
                 <div className="text-xs text-gray-500">No additional details provided.</div>
+            )}
+
+            {/* Price Information */}
+            <VariantPrice variant={variant} />
+
+            {/* Cancellation Policy */}
+            <CancellationPolicy cancellationInfo={variant.cancellation_info} />
+
+            {/* Select Button */}
+            {onSelectClick && (
+                <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectClick();
+                        }}
+                        className="w-full rounded-xl bg-green-600 hover:bg-green-700 text-white py-2 font-medium transition cursor-pointer"
+                    >
+                        Select
+                    </button>
+                </div>
             )}
         </button>
     );
