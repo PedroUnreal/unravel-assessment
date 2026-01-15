@@ -1,26 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Room } from '../types/hotel';
+import { useEffect, useRef } from 'react';
 import { RoomCard } from './RoomCard';
+import { RoomCardSkeleton } from './RoomCardSkeleton';
+import { useFetchRooms } from '../hooks/useFetchRooms';
+import { Toast } from './Toast';
 
-interface RoomListProps {
-  rooms: Room[];
-}
+const BATCH_SIZE = 3;
 
-const BATCH_SIZE = 9;
-
-export function RoomList({ rooms }: RoomListProps) {
-  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+export function RoomList() {
+  const { rooms, error, isLoading, hasMoreRooms, fetchRooms } = useFetchRooms(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const visibleRooms = useMemo(() => rooms.slice(0, visibleCount), [rooms, visibleCount]);
-  const hasMoreRooms = visibleCount < rooms.length;
-
-  const triggerLoadMore = useCallback(() => {
-    if (visibleCount >= rooms.length) {
-      return;
-    }
-    setVisibleCount(prev => Math.min(prev + BATCH_SIZE, rooms.length));
-  }, [visibleCount, rooms.length]);
+  useEffect(() => {
+    // Initial fetch
+    fetchRooms();
+  }, [fetchRooms]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -30,12 +23,12 @@ export function RoomList({ rooms }: RoomListProps) {
 
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting) {
-          triggerLoadMore();
+        if (entries[0].isIntersecting && !isLoading && hasMoreRooms) {
+          fetchRooms();
         }
       },
       {
-        rootMargin: '200px',
+        rootMargin: "0px 0px 200px 0px",
         threshold: 0,
       },
     );
@@ -45,12 +38,12 @@ export function RoomList({ rooms }: RoomListProps) {
     return () => {
       observer.disconnect();
     };
-  }, [triggerLoadMore]);
+  }, [fetchRooms, isLoading, hasMoreRooms]);
 
-  if (rooms.length === 0) {
+  if (!error && rooms.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No rooms available</p>
+        <div className="text-gray-500">No rooms available</div>
       </div>
     );
   }
@@ -58,15 +51,17 @@ export function RoomList({ rooms }: RoomListProps) {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-        {visibleRooms.map(room => (
+        {rooms.map((room, index) => (
           <RoomCard
-            key={room.room_type_code}
+            key={`${index}_${room.room_type_code}`}
             room={room}
           />
         ))}
-      </div>
 
-      <div ref={sentinelRef} className="h-4" aria-hidden="true" />
+        {isLoading && Array.from({ length: BATCH_SIZE }).map((_, index) => (
+          <RoomCardSkeleton key={`skeleton-${index}`} />
+        ))}
+      </div>
 
       <div className="flex items-center justify-center min-h-10">
         {hasMoreRooms ? (
@@ -75,6 +70,10 @@ export function RoomList({ rooms }: RoomListProps) {
           <div className="text-sm text-gray-400">You have reached the end of the list</div>
         )}
       </div>
+
+      {error && <Toast message={error || "Failed to fetch rooms. Please try again later."} />}
+
+      <div ref={sentinelRef} className="h-4" aria-hidden="true" />
     </div>
   );
 }

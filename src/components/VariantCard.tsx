@@ -39,7 +39,7 @@ export function VariantCard({
         }`;
 
     return (
-        <button type="button" aria-pressed={isSelected} className={variantClasses} onClick={onSelect}>
+        <div aria-pressed={isSelected} className={variantClasses} onClick={onSelect}>
             <div className="text-sm font-semibold text-gray-900">
                 {name || 'Variant'}
             </div>
@@ -81,6 +81,6 @@ export function VariantCard({
                     </button>
                 </div>
             )}
-        </button>
+        </div>
     );
 }

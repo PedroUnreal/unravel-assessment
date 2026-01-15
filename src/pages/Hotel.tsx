@@ -4,14 +4,11 @@ import hotelData from '../../sample.json';
 
 export function HotelPage() {
   const data = hotelData as HotelData;
-  const { hotel_details, rooms_by_serial_no } = data;
-
-  // Get all rooms from the first serial_no entry
-  const rooms = rooms_by_serial_no[0]?.rooms || [];
+  const { hotel_details } = data;
 
   return (
     <div>
-      {/* Hotel sticky header */}
+      {/* Hotel page header */}
       <section className="bg-white shadow-sm" >
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
@@ -35,30 +32,13 @@ export function HotelPage() {
             </div>
           </div>
         </div>
-      </section >
+      </section>
 
-      {/* Rooms list Container */}
+      {/* Rooms list container */}
       <section className="max-w-7xl mx-auto px-4 py-8" >
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Select Your Room</h2>
-          {rooms.length > 0 && (
-            <div className="text-gray-600">
-              Choose from {rooms.length} room types available
-            </div>
-          )}
-        </div>
-
-        {rooms.length === 0 ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">No Rooms Available</h2>
-            <p className="text-gray-600">Currently, there are no rooms available for this hotel.</p>
-          </div>
-        ) : (
-          <RoomList
-            rooms={rooms}
-          />
-        )}
-      </section >
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Select Your Room</h2>
+        <RoomList />
+      </section>
     </div>
   )
 }
