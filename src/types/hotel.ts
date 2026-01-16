@@ -34,13 +34,13 @@ export interface RoomProperties {
 }
 
 export interface CancellationInfo {
-    free_cancellation_info?: string;
-    free_cancel_description?: string;
-    free_amendment_description?: string;
+    free_cancellation_info?: string | null;
+    free_cancel_description?: string | null;
+    free_amendment_description?: string | null;
     cancellation_rules?: Array<{
         date_info?: string;
         description?: string;
-        cost?: number | string;
+        cost?: number | string | null;
     }>;
 }
 
