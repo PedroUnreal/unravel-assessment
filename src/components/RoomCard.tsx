@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import type { Room, ImageSet } from '../types/hotel';
+import type { Room } from '../types/hotel';
 import { useInView } from '../hooks/useInView';
 import { MediaCarousel, type CarouselImageSource } from './utils/MediaCarousel';
-import { VariantCard, } from './VariantCard';
+import { VariantCard } from './VariantCard';
 
 interface RoomCardProps {
   room: Room;
@@ -12,68 +12,17 @@ const DEFAULT_IMAGE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw,
 const OBSERVER_OPTIONS = { once: false, rootMargin: '150px', threshold: 0.15 };
 const INITIAL_VISIBLE_VARIANTS = 2;
 
-const buildSrcSet = (imageSet?: ImageSet | null) => {
-  if (!imageSet) {
-    return null;
-  }
-
-  const oneX = imageSet.twoX ? Object.values(imageSet.twoX).find(Boolean) : null;
-  const twoX = imageSet.threeX ? Object.values(imageSet.threeX).find(Boolean) : null;
-
-  if (!oneX && !twoX) {
-    return null;
-  }
-
-  const baseSrc = oneX || twoX;
-  const srcSetParts: string[] = [];
-  if (oneX) {
-    srcSetParts.push(`${oneX} 1x`);
-  }
-  if (twoX) {
-    srcSetParts.push(`${twoX} 2x`);
-  }
-
-  return {
-    src: baseSrc as string,
-    srcSet: srcSetParts.length > 0 ? srcSetParts.join(', ') : undefined,
-    placeholder: imageSet.twoX?.thumbnail || imageSet.threeX?.thumbnail,
-  };
-};
-
 const collectRoomImageSources = (room: Room): CarouselImageSource[] => {
-  const sourceMap = new Map<string, CarouselImageSource>();
-
-  const addSource = (source?: CarouselImageSource | null) => {
-    if (!source || !source.src || sourceMap.has(source.src)) {
-      return;
-    }
-
-    sourceMap.set(source.src, {
-      ...source,
-      sizes: source.sizes || DEFAULT_IMAGE_SIZES,
-    });
-  };
-
-  room.properties?.room_images?.forEach(resource => {
-    resource.image_urls?.forEach(url => {
-      if (url) {
-        addSource({ src: url, sizes: DEFAULT_IMAGE_SIZES });
-      }
-    });
-  });
-
-  room.images?.forEach(imageSet => {
-    const responsiveSource = buildSrcSet(imageSet);
-    addSource(responsiveSource);
-  });
-
-  return Array.from(sourceMap.values());
+  return (
+    room.properties?.room_images?.flatMap(resource =>
+      resource.image_urls?.filter(Boolean).map(url => ({
+        src: url,
+        sizes: DEFAULT_IMAGE_SIZES,
+      })) ?? []
+    ) ?? []
+  );
 };
 
-/**
- * Reusable RoomCard component that displays room details
- * with lazy loading for images and videos based on viewport visibility
- */
 export function RoomCard({ room }: RoomCardProps) {
   const { ref, isInView: isCardInView, hasEnteredView } = useInView(OBSERVER_OPTIONS);
   const [showAllVariants, setShowAllVariants] = useState(false);

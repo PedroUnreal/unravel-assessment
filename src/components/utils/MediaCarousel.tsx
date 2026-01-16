@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ResponsiveImage } from './ResponsiveImage';
 
 export interface CarouselImageSource {
   src: string;
@@ -21,11 +22,139 @@ type CarouselSlide =
   | { type: 'image'; source: CarouselImageSource };
 
 const DEFAULT_ROTATE_INTERVAL = 10000;
+const MIN_SWIPE_DISTANCE = 50;
 
-/**
- * Renders a media block that prefers video and falls back to an image carousel
- * with clickable dots in the bottom-left corner.
- */
+interface VideoSlideProps {
+  url: string;
+  isActive: boolean;
+  onLoad: () => void;
+}
+
+function VideoSlide({ url, isActive, onLoad }: VideoSlideProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+
+    if (isActive) {
+      const playPromise = node.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.catch(() => {
+          // Autoplay might be blocked; ignore errors silently.
+        });
+      }
+    } else {
+      node.pause();
+    }
+  }, [isActive]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={url}
+      autoPlay={isActive}
+      muted
+      loop
+      playsInline
+      preload={isActive ? 'auto' : 'none'}
+      className="w-full h-full object-cover object-center"
+      onLoadedData={onLoad}
+      onError={onLoad}
+    />
+  );
+}
+
+interface ImageSlideProps {
+  source: CarouselImageSource;
+  alt: string;
+  onLoad: () => void;
+}
+
+function ImageSlide({ source, alt, onLoad }: ImageSlideProps) {
+  return (
+    <ResponsiveImage
+      src={source.src}
+      srcSet={source.srcSet}
+      sizes={source.sizes}
+      alt={alt}
+      placeholder={source.placeholder}
+      onLoad={onLoad}
+      onError={onLoad}
+      className="w-full h-full object-cover object-center"
+    />
+  );
+}
+
+interface SlidesSwitcherProps {
+  totalSlides: number;
+  currentIndex: number;
+  onSlideChange: (index: number) => void;
+}
+
+function SlidesSwitcher({ totalSlides, currentIndex, onSlideChange }: SlidesSwitcherProps) {
+  if (totalSlides <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="absolute left-4 bottom-4 flex items-center gap-2">
+      {Array.from({ length: totalSlides }, (_, index) => (
+        <button
+          key={index}
+          type="button"
+          aria-label={`Go to slide ${index + 1}`}
+          className={`h-2.5 w-2.5 rounded-full border border-white transition-colors cursor-pointer ${currentIndex === index ? 'bg-white' : 'bg-white/40 hover:bg-white/70'
+            }`}
+          onClick={() => onSlideChange(index)}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface SwipeHandlers {
+  handleTouchStart: (e: React.TouchEvent) => void;
+  handleTouchMove: (e: React.TouchEvent) => void;
+  handleTouchEnd: () => void;
+}
+
+function useSwipeNavigation(
+  onNavigate: (direction: 'next' | 'prev') => void
+): SwipeHandlers {
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > MIN_SWIPE_DISTANCE;
+    const isRightSwipe = distance < -MIN_SWIPE_DISTANCE;
+
+    if (isLeftSwipe) {
+      onNavigate('next');
+    } else if (isRightSwipe) {
+      onNavigate('prev');
+    }
+  };
+
+  return {
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+  };
+}
+
 export function MediaCarousel({
   videoUrl,
   imageSources,
@@ -34,8 +163,6 @@ export function MediaCarousel({
   rotateInterval = DEFAULT_ROTATE_INTERVAL,
   isActive = true,
 }: MediaCarouselProps) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
   const slides: CarouselSlide[] = useMemo(() => {
     const items: CarouselSlide[] = [];
 
@@ -54,8 +181,16 @@ export function MediaCarousel({
   const [currentIndexKey, setCurrentIndexKey] = useState(slidesKey);
   const [mediaLoaded, setMediaLoaded] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const handleNavigation = (direction: 'next' | 'prev') => {
+    if (direction === 'next') {
+      setCurrentIndex(prev => (prev + 1) % slides.length);
+    } else {
+      setCurrentIndex(prev => (prev - 1 + slides.length) % slides.length);
+    }
+  };
+
+  const swipeHandlers = useSwipeNavigation(handleNavigation);
 
   // Reset states when slides change by comparing keys
   if (mediaLoadedKey !== slidesKey) {
@@ -80,24 +215,6 @@ export function MediaCarousel({
     return () => window.clearInterval(intervalId);
   }, [autoRotate, slides.length, rotateInterval, isActive]);
 
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node || slides[currentIndex]?.type !== 'video') {
-      return;
-    }
-
-    if (isActive) {
-      const playPromise = node.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise.catch(() => {
-          // Autoplay might be blocked; ignore errors silently.
-        });
-      }
-    } else {
-      node.pause();
-    }
-  }, [isActive, currentIndex, slides]);
-
   if (slides.length === 0) {
     return null;
   }
@@ -106,83 +223,36 @@ export function MediaCarousel({
   const handleMediaLoad = () => setMediaLoaded(true);
   const isVideo = currentSlide.type === 'video';
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      setCurrentIndex(prev => (prev + 1) % slides.length);
-    } else if (isRightSwipe) {
-      setCurrentIndex(prev => (prev - 1 + slides.length) % slides.length);
-    }
-  };
-
   return (
     <div
       className="relative h-56 w-full bg-gray-100 overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      onTouchStart={swipeHandlers.handleTouchStart}
+      onTouchMove={swipeHandlers.handleTouchMove}
+      onTouchEnd={swipeHandlers.handleTouchEnd}
     >
-      {isVideo ? (
-        <video
-          ref={videoRef}
-          src={currentSlide.url}
-          autoPlay={isActive}
-          muted
-          loop
-          playsInline
-          preload={isActive ? 'auto' : 'none'}
-          className={`h-full w-full object-cover transition-opacity duration-300 ${mediaLoaded ? 'opacity-100' : 'opacity-0'}`}
-          onLoadedData={handleMediaLoad}
-          onError={handleMediaLoad}
-        />
-      ) : (
-        <img
-          src={currentSlide.source.src}
-          srcSet={currentSlide.source.srcSet}
-          sizes={currentSlide.source.sizes}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          onLoad={handleMediaLoad}
-          onError={handleMediaLoad}
-          style={currentSlide.source.placeholder ? { backgroundImage: `url(${currentSlide.source.placeholder})` } : undefined}
-          className={`h-full w-full object-cover transition-opacity duration-300 ${mediaLoaded ? 'opacity-100' : 'opacity-0'}`}
-        />
-      )}
+      <div className={`transition-opacity duration-300 ${mediaLoaded ? 'opacity-100' : 'opacity-0'}`}>
+        {isVideo ? (
+          <VideoSlide
+            url={currentSlide.url}
+            isActive={isActive}
+            onLoad={handleMediaLoad}
+          />
+        ) : (
+          <ImageSlide
+            source={currentSlide.source}
+            alt={alt}
+            onLoad={handleMediaLoad}
+          />
+        )}
+      </div>
 
       {!mediaLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
 
-      {slides.length > 1 && (
-        <div className="absolute left-4 bottom-4 flex items-center gap-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              aria-label={`Go to slide ${index + 1}`}
-              className={`h-2.5 w-2.5 rounded-full border border-white transition-colors cursor-pointer ${currentIndex === index ? 'bg-white' : 'bg-white/40 hover:bg-white/70'
-                }`}
-              onClick={() => setCurrentIndex(index)}
-            />
-          ))}
-        </div>
-      )}
+      <SlidesSwitcher
+        totalSlides={slides.length}
+        currentIndex={currentIndex}
+        onSlideChange={setCurrentIndex}
+      />
     </div>
   );
 }

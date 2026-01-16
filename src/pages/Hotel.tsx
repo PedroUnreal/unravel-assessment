@@ -1,4 +1,5 @@
 import { RoomList } from '../components/RoomList';
+import { ResponsiveImage } from '../components/utils/ResponsiveImage';
 import type { HotelData } from '../types/hotel';
 import hotelData from '../../sample.json';
 
@@ -13,10 +14,12 @@ export function HotelPage() {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             {hotel_details.images[0] && (
-              <img
+              <ResponsiveImage
                 src={hotel_details.images[0].twoX.thumbnail}
+                srcSet={hotel_details.images[0].threeX.thumbnail}
                 alt={hotel_details.name}
                 className="w-16 h-16 rounded-lg object-cover"
+                loading="eager"
               />
             )}
             <div>
