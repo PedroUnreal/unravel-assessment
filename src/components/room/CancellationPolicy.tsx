@@ -18,11 +18,10 @@ export function CancellationPolicy({
     >
       <button
         type="button"
-        className={`text-sm font-medium text-left flex items-center gap-1 transition-colors ${
-          cancellationInfo
-            ? 'text-green-600 hover:underline'
-            : 'text-gray-400 cursor-not-allowed'
-        }`}
+        className={`text-sm font-medium text-left flex items-center gap-1 transition-colors ${cancellationInfo
+          ? 'text-green-600 cursor-pointer'
+          : 'text-gray-400'
+          }`}
         onClick={(e) => {
           e.stopPropagation();
           if (!cancellationInfo) return;
