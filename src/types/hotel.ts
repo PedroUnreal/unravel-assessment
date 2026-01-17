@@ -34,36 +34,36 @@ export interface RoomProperties {
 }
 
 export interface CancellationInfo {
-    free_cancellation_info?: string | null;
-    free_cancel_description?: string | null;
-    free_amendment_description?: string | null;
-    cancellation_rules?: Array<{
-        date_info?: string;
-        description?: string;
-        cost?: number | string | null;
-    }>;
+  free_cancellation_info?: string | null;
+  free_cancel_description?: string | null;
+  free_amendment_description?: string | null;
+  cancellation_rules?: Array<{
+    date_info?: string;
+    description?: string;
+    cost?: number | string | null;
+  }>;
 }
 
 export interface VariantPricing {
-    currency?: string;
-    total_price?: number;
-    discounted_price?: number;
-    promo_list?: Array<{
-        offer_total_price?: number;
-        offer_discounted_total_price?: number;
-        offer_title?: string;
-    }>;
+  currency?: string;
+  total_price?: number;
+  discounted_price?: number;
+  promo_list?: Array<{
+    offer_total_price?: number;
+    offer_discounted_total_price?: number;
+    offer_title?: string;
+  }>;
 }
 
 export interface RoomVariant {
-    total_price?: VariantPricing;
-    name?: string;
-    variant_id: string;
-    display_properties?: Array<{
-        display_name?: string;
-        value?: string;
-    }>;
-    cancellation_info?: CancellationInfo;
+  total_price?: VariantPricing;
+  name?: string;
+  variant_id: string;
+  display_properties?: Array<{
+    display_name?: string;
+    value?: string;
+  }>;
+  cancellation_info?: CancellationInfo;
 }
 
 export interface Room {
@@ -74,7 +74,6 @@ export interface Room {
   properties: RoomProperties;
   variants?: RoomVariant[];
 }
-
 
 export interface HotelDetails {
   item_id: string;

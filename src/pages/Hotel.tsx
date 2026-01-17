@@ -1,5 +1,5 @@
-import { RoomList } from '../components/RoomList';
-import { ResponsiveImage } from '../components/utils/ResponsiveImage';
+import { RoomList } from '../components/room/RoomList';
+import { ResponsiveImage } from '../components/common/ResponsiveImage';
 import type { HotelData } from '../types/hotel';
 import hotelData from '../../sample.json';
 
@@ -10,7 +10,7 @@ export function HotelPage() {
   return (
     <div>
       {/* Hotel page header */}
-      <section className="bg-white shadow-sm" >
+      <section className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             {hotel_details.images[0] && (
@@ -38,10 +38,12 @@ export function HotelPage() {
       </section>
 
       {/* Rooms list container */}
-      <section className="max-w-7xl mx-auto px-4 py-8" >
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Select Your Room</h2>
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Select Your Room
+        </h2>
         <RoomList />
       </section>
     </div>
-  )
+  );
 }

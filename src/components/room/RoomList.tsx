@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
-import { useFetchRooms } from '../hooks/useFetchRooms';
-import { Toast } from './Toast';
+import { useFetchRooms } from '../../hooks/useFetchRooms';
+import { Toast } from '../common/Toast';
 
 const BATCH_SIZE = 3;
 
 export function RoomList() {
-  const { rooms, error, isLoading, hasMoreRooms, fetchRooms } = useFetchRooms(BATCH_SIZE);
+  const { rooms, error, isLoading, hasMoreRooms, fetchRooms } =
+    useFetchRooms(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -22,15 +23,15 @@ export function RoomList() {
     }
 
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         if (entries[0].isIntersecting && !isLoading && hasMoreRooms) {
           fetchRooms();
         }
       },
       {
-        rootMargin: "0px 0px 200px 0px",
+        rootMargin: '0px 0px 200px 0px',
         threshold: 0,
-      },
+      }
     );
 
     observer.observe(sentinel);
@@ -52,26 +53,30 @@ export function RoomList() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {rooms.map((room, index) => (
-          <RoomCard
-            key={`${index}_${room.room_type_code}`}
-            room={room}
-          />
+          <RoomCard key={`${index}_${room.room_type_code}`} room={room} />
         ))}
 
-        {isLoading && Array.from({ length: BATCH_SIZE }).map((_, index) => (
-          <RoomCardSkeleton key={`skeleton-${index}`} />
-        ))}
+        {isLoading &&
+          Array.from({ length: BATCH_SIZE }).map((_, index) => (
+            <RoomCardSkeleton key={`skeleton-${index}`} />
+          ))}
       </div>
 
       <div className="flex items-center justify-center min-h-10">
         {hasMoreRooms ? (
           <div className="text-xs text-gray-400">Scroll to load more rooms</div>
         ) : (
-          <div className="text-sm text-gray-400">You have reached the end of the list</div>
+          <div className="text-sm text-gray-400">
+            You have reached the end of the list
+          </div>
         )}
       </div>
 
-      {error && <Toast message={error || "Failed to fetch rooms. Please try again later."} />}
+      {error && (
+        <Toast
+          message={error || 'Failed to fetch rooms. Please try again later.'}
+        />
+      )}
 
       <div ref={sentinelRef} className="h-4" aria-hidden="true" />
     </div>

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import hotelData from '../../sample.json';
-import type { HotelData, Room } from "../types/hotel";
+import type { HotelData, Room } from '../types/hotel';
 
 const ALL_ROOMS = (hotelData as HotelData).rooms_by_serial_no[0]?.rooms || [];
 
@@ -11,16 +11,19 @@ export function useFetchRooms(pageSize: number) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [hasMoreRooms, setHasMoreRooms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string>('');
 
   const fetchRooms = useCallback(() => {
     console.log('Fetching rooms...');
     setIsLoading(true);
 
     try {
-      setRooms((prev) => [...prev, ...ALL_ROOMS.slice(prev.length, prev.length + pageSize)]);
+      setRooms((prev) => [
+        ...prev,
+        ...ALL_ROOMS.slice(prev.length, prev.length + pageSize),
+      ]);
     } catch (err) {
-      console.log(err)
+      console.log(err);
       setError('Failed to load rooms. Please try again.');
     } finally {
       setTimeout(() => {
@@ -39,5 +42,5 @@ export function useFetchRooms(pageSize: number) {
     isLoading,
     hasMoreRooms,
     fetchRooms,
-  }
+  };
 }

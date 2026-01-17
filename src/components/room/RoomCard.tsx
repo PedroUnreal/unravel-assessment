@@ -1,30 +1,36 @@
 import { useState, useMemo, useEffect } from 'react';
-import type { Room } from '../types/hotel';
-import { useInView } from '../hooks/useInView';
-import { MediaCarousel, type CarouselImageSource } from './utils/MediaCarousel';
+import type { Room } from '../../types/hotel';
+import { useInView } from '../../hooks/useInView';
+import { MediaCarousel } from '../common/carousel/MediaCarousel';
 import { VariantCard } from './VariantCard';
 
 interface RoomCardProps {
   room: Room;
 }
 
-const DEFAULT_IMAGE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
+const DEFAULT_IMAGE_SIZES =
+  '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
 const OBSERVER_OPTIONS = { once: false, rootMargin: '150px', threshold: 0.15 };
 const INITIAL_VISIBLE_VARIANTS = 2;
 
-const collectRoomImageSources = (room: Room): CarouselImageSource[] => {
+const collectRoomImageSources = (room: Room) => {
   return (
-    room.properties?.room_images?.flatMap(resource =>
-      resource.image_urls?.filter(Boolean).map(url => ({
-        src: url,
-        sizes: DEFAULT_IMAGE_SIZES,
-      })) ?? []
+    room.properties?.room_images?.flatMap(
+      (resource) =>
+        resource.image_urls?.filter(Boolean).map((url) => ({
+          src: url,
+          sizes: DEFAULT_IMAGE_SIZES,
+        })) ?? []
     ) ?? []
   );
 };
 
 export function RoomCard({ room }: RoomCardProps) {
-  const { ref, isInView: isCardInView, hasEnteredView } = useInView(OBSERVER_OPTIONS);
+  const {
+    ref,
+    isInView: isCardInView,
+    hasEnteredView,
+  } = useInView(OBSERVER_OPTIONS);
   const [showAllVariants, setShowAllVariants] = useState(false);
   const variants = useMemo(() => room.variants ?? [], [room.variants]);
 
@@ -35,14 +41,20 @@ export function RoomCard({ room }: RoomCardProps) {
     return null;
   }, [variants]);
 
-  const [selectedVariantKey, setSelectedVariantKey] = useState<string | null>(initialVariantKey);
+  const [selectedVariantKey, setSelectedVariantKey] = useState<string | null>(
+    initialVariantKey
+  );
 
   const imageSources = useMemo(() => collectRoomImageSources(room), [room]);
   const roomVideoUrl = room.properties?.video_url?.med;
 
   const hasMoreVariants = variants.length > INITIAL_VISIBLE_VARIANTS;
   const visibleVariants = useMemo(
-    () => variants.slice(0, showAllVariants ? variants.length : INITIAL_VISIBLE_VARIANTS),
+    () =>
+      variants.slice(
+        0,
+        showAllVariants ? variants.length : INITIAL_VISIBLE_VARIANTS
+      ),
     [variants, showAllVariants]
   );
 
@@ -66,10 +78,14 @@ export function RoomCard({ room }: RoomCardProps) {
       )}
 
       <div className="p-5 flex flex-col gap-4">
-        <div className="text-lg font-semibold text-gray-900 truncate">{room.name}</div>
+        <div className="text-lg font-semibold text-gray-900 truncate">
+          {room.name}
+        </div>
         {variants.length > 0 && (
           <div className="space-y-3 pt-3 border-t border-gray-100">
-            <div className="text-sm font-semibold text-gray-00">Available variants</div>
+            <div className="text-sm font-semibold text-gray-00">
+              Available variants
+            </div>
             <div className="space-y-3">
               {visibleVariants.map((variant) => {
                 const variantKey = variant.variant_id;
@@ -92,7 +108,7 @@ export function RoomCard({ room }: RoomCardProps) {
               {hasMoreVariants && (
                 <button
                   type="button"
-                  onClick={() => setShowAllVariants(prev => !prev)}
+                  onClick={() => setShowAllVariants((prev) => !prev)}
                   className="text-xs font-semibold text-teal-600 hover:underline"
                 >
                   {showAllVariants ? 'click to show less' : 'click to see more'}

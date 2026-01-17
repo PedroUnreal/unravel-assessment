@@ -29,20 +29,17 @@ export function useInView(options?: UseInViewOptions) {
     const element = ref.current;
     if (!element) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-            setIsInView(true);
-            setHasEnteredView(true);
-          if (once) {
-            observer.unobserve(element);
-          }
-        } else if (!once) {
-          setIsInView(false);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true);
+        setHasEnteredView(true);
+        if (once) {
+          observer.unobserve(element);
         }
-      },
-      observerOptions,
-    );
+      } else if (!once) {
+        setIsInView(false);
+      }
+    }, observerOptions);
 
     observer.observe(element);
 
