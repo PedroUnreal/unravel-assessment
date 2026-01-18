@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { Room } from '../../types/hotel';
-import { useInView } from '../../hooks/useInView';
 import { MediaCarousel } from '../common/carousel/MediaCarousel';
 import { VariantCard } from './VariantCard';
 
@@ -10,7 +9,6 @@ interface RoomCardProps {
 
 const DEFAULT_IMAGE_SIZES =
   '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
-const OBSERVER_OPTIONS = { once: false, rootMargin: '150px', threshold: 0.15 };
 const INITIAL_VISIBLE_VARIANTS = 2;
 
 const collectRoomImageSources = (room: Room) => {
@@ -26,11 +24,6 @@ const collectRoomImageSources = (room: Room) => {
 };
 
 export function RoomCard({ room }: RoomCardProps) {
-  const {
-    ref,
-    isInView: isCardInView,
-    hasEnteredView,
-  } = useInView(OBSERVER_OPTIONS);
   const [showAllVariants, setShowAllVariants] = useState(false);
   const variants = useMemo(() => room.variants ?? [], [room.variants]);
 
@@ -65,17 +58,13 @@ export function RoomCard({ room }: RoomCardProps) {
 
   return (
     <div
-      ref={ref}
       className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col h-full"
     >
-      {hasEnteredView && (
-        <MediaCarousel
-          videoUrl={roomVideoUrl}
-          imageSources={imageSources}
-          alt={room.name}
-          isActive={isCardInView}
-        />
-      )}
+      <MediaCarousel
+        videoUrl={roomVideoUrl}
+        imageSources={imageSources}
+        alt={room.name}
+      />
 
       <div className="p-5 flex flex-col gap-4">
         <div className="text-lg font-semibold text-gray-900 truncate">

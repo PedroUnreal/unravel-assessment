@@ -3,6 +3,7 @@ import { useSwipeNavigation } from './useSwipeNavigation';
 import { VideoSlide } from './VideoSlide';
 import { ImageSlide, type CarouselImageSource } from './ImageSlide';
 import { SlidesSwitcher } from './SlidesSwitcher';
+import { useInView } from '../../../hooks/useInView';
 
 interface MediaCarouselProps {
   videoUrl?: string;
@@ -18,6 +19,7 @@ type CarouselSlide =
   | { type: 'image'; source: CarouselImageSource };
 
 const DEFAULT_ROTATE_INTERVAL = 10000;
+const OBSERVER_OPTIONS = { once: false, rootMargin: '150px', threshold: 0.15 };
 
 export function MediaCarousel({
   videoUrl,
@@ -25,8 +27,13 @@ export function MediaCarousel({
   alt,
   autoRotate = true,
   rotateInterval = DEFAULT_ROTATE_INTERVAL,
-  isActive = true,
 }: MediaCarouselProps) {
+  const {
+    ref,
+    isInView: isActive,
+    hasEnteredView,
+  } = useInView(OBSERVER_OPTIONS);
+
   const slides: CarouselSlide[] = useMemo(() => {
     const items: CarouselSlide[] = [];
 
@@ -89,6 +96,7 @@ export function MediaCarousel({
 
   return (
     <div
+      ref={ref}
       className={`relative h-56 w-full bg-gray-100 overflow-hidden transition-opacity duration-300 ${mediaLoaded ? 'opacity-100' : 'opacity-0'}`}
       onTouchStart={swipeHandlers.handleTouchStart}
       onTouchMove={swipeHandlers.handleTouchMove}
@@ -108,7 +116,7 @@ export function MediaCarousel({
         />
       )}
 
-      {!mediaLoaded && (
+      {!hasEnteredView || !mediaLoaded && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
       )}
 
