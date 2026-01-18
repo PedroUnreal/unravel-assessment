@@ -13,7 +13,7 @@ export function useInView(options?: UseInViewOptions) {
   const [isInView, setIsInView] = useState(false);
   const [hasEnteredView, setHasEnteredView] = useState(false);
 
-  const { once, observerOptions } = useMemo(() => {
+    const { once, observerOptions } = useMemo(() => {
     const { once: shouldRunOnce = true, ...rest } = options ?? {};
     return {
       once: shouldRunOnce,
@@ -32,11 +32,11 @@ export function useInView(options?: UseInViewOptions) {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setIsInView(true);
-        setHasEnteredView(true);
+
         if (once) {
-          observer.unobserve(element);
+          setHasEnteredView(true);
         }
-      } else if (!once) {
+      } else {
         setIsInView(false);
       }
     }, observerOptions);

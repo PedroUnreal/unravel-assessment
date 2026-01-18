@@ -19,7 +19,7 @@ type CarouselSlide =
   | { type: 'image'; source: CarouselImageSource };
 
 const DEFAULT_ROTATE_INTERVAL = 10000;
-const OBSERVER_OPTIONS = { once: false, rootMargin: '150px', threshold: 0.15 };
+const OBSERVER_OPTIONS = { once: true, rootMargin: '0px', threshold: 0.15 };
 
 export function MediaCarousel({
   videoUrl,
@@ -97,7 +97,7 @@ export function MediaCarousel({
   return (
     <div
       ref={ref}
-      className={`relative h-56 w-full bg-gray-100 overflow-hidden transition-opacity duration-300 ${mediaLoaded ? 'opacity-100' : 'opacity-0'}`}
+      className={`relative h-56 w-full bg-gray-100 overflow-hidden`}
       onTouchStart={swipeHandlers.handleTouchStart}
       onTouchMove={swipeHandlers.handleTouchMove}
       onTouchEnd={swipeHandlers.handleTouchEnd}

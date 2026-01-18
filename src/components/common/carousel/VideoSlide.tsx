@@ -33,7 +33,7 @@ export function VideoSlide({ url, isActive, onLoad }: VideoSlideProps) {
       muted
       loop
       playsInline
-      preload={isActive ? 'auto' : 'none'}
+      preload={'auto'}
       className="w-full h-full object-cover object-center"
       onLoadedData={onLoad}
       onError={onLoad}
