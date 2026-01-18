@@ -51,16 +51,18 @@ export function RoomList() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {rooms.map((room, index) => (
-          <RoomCard key={`${index}_${room.room_type_code}`} room={room} />
+          <li key={`${index}_${room.room_type_code}`}>
+            <RoomCard room={room} />
+          </li>
         ))}
 
         {isLoading &&
           Array.from({ length: BATCH_SIZE }).map((_, index) => (
             <RoomCardSkeleton key={`skeleton-${index}`} />
           ))}
-      </div>
+      </ul>
 
       <div className="flex items-center justify-center min-h-10">
         {hasMoreRooms ? (
