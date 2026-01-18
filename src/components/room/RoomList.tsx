@@ -4,7 +4,7 @@ import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { useFetchRooms } from '../../hooks/useFetchRooms';
 import { Toast } from '../common/Toast';
 
-const BATCH_SIZE = 3;
+const BATCH_SIZE = 6;
 
 export function RoomList() {
   const { rooms, error, isLoading, hasMoreRooms, fetchRooms } =

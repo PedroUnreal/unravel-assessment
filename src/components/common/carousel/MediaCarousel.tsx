@@ -97,24 +97,28 @@ export function MediaCarousel({
   return (
     <div
       ref={ref}
-      className={`relative h-56 w-full bg-gray-100 overflow-hidden`}
+      className={`relative h-56 w-full bg-gray-100 overflow-hidden transition-opacity duration-500 ${mediaLoaded ? 'opacity-100' : 'opacity-50'}`}
       onTouchStart={swipeHandlers.handleTouchStart}
       onTouchMove={swipeHandlers.handleTouchMove}
       onTouchEnd={swipeHandlers.handleTouchEnd}
     >
-      {isVideo ? (
-        <VideoSlide
-          url={currentSlide.url}
-          isActive={isActive}
-          onLoad={handleMediaLoad}
-        />
-      ) : (
-        <ImageSlide
-          source={currentSlide.source}
-          alt={alt}
-          onLoad={handleMediaLoad}
-        />
-      )}
+      {hasEnteredView &&
+        <>
+          {isVideo ? (
+            <VideoSlide
+              url={currentSlide.url}
+              isActive={isActive}
+              onLoad={handleMediaLoad}
+            />
+          ) : (
+            <ImageSlide
+              source={currentSlide.source}
+              alt={alt}
+              onLoad={handleMediaLoad}
+            />
+          )}
+        </>
+      }
 
       {!hasEnteredView || !mediaLoaded && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
